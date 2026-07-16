@@ -10,22 +10,15 @@ from app.models.historial_movimiento import HistorialMovimiento
 from app.schemas.activo import ActivoCreate, ActivoReasignar, ActivoUpdate
 
 
-def get_activos(
+def _apply_activo_filters(
     db: Session,
     categoria_id: Optional[int] = None,
     ubicacion_id: Optional[int] = None,
     estado_id: Optional[int] = None,
     custodio_id: Optional[int] = None,
     search: Optional[str] = None,
-    skip: int = 0,
-    limit: int = 100,
 ):
-    query = db.query(Activo).options(
-        joinedload(Activo.categoria),
-        joinedload(Activo.ubicacion),
-        joinedload(Activo.custodio),
-        joinedload(Activo.estado),
-    )
+    query = db.query(Activo)
 
     if categoria_id is not None:
         query = query.filter(Activo.categoria_id == categoria_id)
@@ -45,8 +38,34 @@ def get_activos(
                 Activo.marca.ilike(like_pattern),
             )
         )
+    return query
 
-    return query.offset(skip).limit(limit).all()
+
+def get_activos(
+    db: Session,
+    categoria_id: Optional[int] = None,
+    ubicacion_id: Optional[int] = None,
+    estado_id: Optional[int] = None,
+    custodio_id: Optional[int] = None,
+    search: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+):
+    query = _apply_activo_filters(
+        db, categoria_id, ubicacion_id, estado_id, custodio_id, search
+    ).options(
+        joinedload(Activo.categoria),
+        joinedload(Activo.ubicacion),
+        joinedload(Activo.custodio),
+        joinedload(Activo.estado),
+    )
+
+    return {
+        "items": query.offset(skip).limit(limit).all(),
+        "total": _apply_activo_filters(
+            db, categoria_id, ubicacion_id, estado_id, custodio_id, search
+        ).count(),
+    }
 
 
 def get_activo(db: Session, id: int):

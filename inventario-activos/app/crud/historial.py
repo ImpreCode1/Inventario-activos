@@ -55,9 +55,11 @@ def get_historial(
     if fecha_hasta is not None:
         query = query.filter(HistorialMovimiento.fecha_movimiento <= fecha_hasta)
 
-    return (
+    total = query.count()
+    items = (
         query.order_by(HistorialMovimiento.fecha_movimiento.desc())
         .offset(skip)
         .limit(limit)
         .all()
     )
+    return {"items": items, "total": total}

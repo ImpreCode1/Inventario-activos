@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { CardSkeleton } from "@/components/ui/LoadingSkeleton";
+import { useToast } from "@/components/ui/Toast";
 
 interface ConteoEstado {
   estado_id: number;
@@ -23,15 +25,38 @@ interface DashboardData {
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState("");
+  const { addToast } = useToast();
 
   useEffect(() => {
     api.get<DashboardData>("/api/v1/dashboard/resumen")
       .then(setData)
-      .catch((err) => setError(err.detail || "Error al cargar dashboard"));
-  }, []);
+      .catch((err) => {
+        const msg = err.detail || "Error al cargar dashboard";
+        setError(msg);
+        addToast(msg, "error");
+      });
+  }, [addToast]);
 
   if (error) return <p className="text-red-500">{error}</p>;
-  if (!data) return <p>Cargando...</p>;
+  if (!data) return (
+    <div>
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <section>
+          <h2 className="text-lg font-semibold mb-3 text-gray-900">Por Estado</h2>
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => <CardSkeleton key={i} />)}
+          </div>
+        </section>
+        <section>
+          <h2 className="text-lg font-semibold mb-3 text-gray-900">Por Categoría</h2>
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => <CardSkeleton key={i} />)}
+          </div>
+        </section>
+      </div>
+    </div>
+  );
 
   return (
     <div>

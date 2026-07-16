@@ -21,6 +21,7 @@ from app.schemas.activo import (
     ActivoUpdate,
 )
 from app.schemas.historial import HistorialResponse
+from app.schemas.pagination import PaginatedResponse
 
 router = APIRouter()
 
@@ -35,7 +36,7 @@ def historial_activo(
     return get_historial_activo(db, id, skip=skip, limit=limit)
 
 
-@router.get("/", response_model=list[ActivoResponse])
+@router.get("/", response_model=PaginatedResponse[ActivoResponse])
 def listar_activos(
     categoria_id: Optional[int] = Query(None),
     ubicacion_id: Optional[int] = Query(None),

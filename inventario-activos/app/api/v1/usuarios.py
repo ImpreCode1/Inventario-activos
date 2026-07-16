@@ -3,9 +3,16 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.crud.dashboard import get_activos_por_custodio
+from app.crud.usuario import get_usuarios
 from app.schemas.activo import ActivoResponse
+from app.schemas.usuario import UsuarioResponse
 
 router = APIRouter()
+
+
+@router.get("/", response_model=list[UsuarioResponse])
+def listar_usuarios(db: Session = Depends(get_db)):
+    return get_usuarios(db)
 
 
 @router.get("/{id}/activos", response_model=list[ActivoResponse])

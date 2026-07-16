@@ -6,11 +6,12 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db
 from app.crud.historial import get_historial, get_historial_activo
 from app.schemas.historial import HistorialResponse
+from app.schemas.pagination import PaginatedResponse
 
 router = APIRouter()
 
 
-@router.get("/", response_model=list[HistorialResponse])
+@router.get("/", response_model=PaginatedResponse[HistorialResponse])
 def listar_historial(
     activo_id: Optional[int] = Query(None),
     fecha_desde: Optional[str] = Query(None),

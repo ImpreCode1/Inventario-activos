@@ -2,7 +2,8 @@
 
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDebounce } from "@/hooks/useDebounce";
 
 interface SelectOption {
   value: string;
@@ -22,14 +23,20 @@ export function ActivoFilters({ categorias, ubicaciones, estados, onFilter }: Ac
   const [ubicacionId, setUbicacionId] = useState("");
   const [estadoId, setEstadoId] = useState("");
 
-  const handleFilter = () => {
+  const debouncedSearch = useDebounce(search, 300);
+
+  const buildParams = () => {
     const params: Record<string, string> = {};
-    if (search) params.search = search;
+    if (debouncedSearch) params.search = debouncedSearch;
     if (categoriaId) params.categoria_id = categoriaId;
     if (ubicacionId) params.ubicacion_id = ubicacionId;
     if (estadoId) params.estado_id = estadoId;
-    onFilter(params);
+    return params;
   };
+
+  useEffect(() => {
+    onFilter(buildParams());
+  }, [debouncedSearch, categoriaId, ubicacionId, estadoId]);
 
   return (
     <div className="flex flex-wrap gap-4 items-end mb-4">
@@ -45,7 +52,7 @@ export function ActivoFilters({ categorias, ubicaciones, estados, onFilter }: Ac
       <Select label="Categoría" options={categorias} value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)} />
       <Select label="Ubicación" options={ubicaciones} value={ubicacionId} onChange={(e) => setUbicacionId(e.target.value)} />
       <Select label="Estado" options={estados} value={estadoId} onChange={(e) => setEstadoId(e.target.value)} />
-      <Button onClick={handleFilter}>Filtrar</Button>
+      <Button onClick={() => onFilter(buildParams())}>Filtrar</Button>
     </div>
   );
 }
